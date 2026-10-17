@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>منصة نوفا للفعاليات | مؤسسة أبهر للتجارة والمقاولات</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Google Fonts (Cairo & Montserrat) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- React & ReactDOM CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+
+  <!-- Babel Compiler -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Cairo', 'sans-serif'],
+            en: ['Montserrat', 'sans-serif'],
+          },
+          colors: {
+            abhar: {
+              gold: '#D4AF37',
+              goldLight: '#F3E5AB',
+              navy: '#0B132B',
+              navyLight: '#1C2541',
+              accent: '#3A506B',
+              emerald: '#10B981',
+              amber: '#F59E0B'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      user-select: none;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0b132b;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1c2541;
+      border-radius: 4px;
+    }
+    .grid-pattern {
+      background-size: 24px 24px;
+      background-image: 
+        linear-gradient(to right, rgba(212, 175, 55, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(212, 175, 55, 0.05) 1px, transparent 1px);
+    }
+  </style>
+</head>
+<body class="h-full bg-slate-950 text-slate-100 overflow-x-hidden">
+  <div id="root" class="h-full"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    // --- MOCK DATA FOR ABHAR TRAD & CONTRACTING (NOVA PLATFORM) ---
+    const initialSpaces = [
+      { id: 'NV-101', zone: 'منطقة المطاعم والمقاهي (Zone A)', size: 50, price: 1500, deposit: 300, maxKw: 25, status: 'available', currentTenant: null, currentKw: 0 },
+      { id: 'NV-102', zone: 'منطقة المطاعم والمقاهي (Zone A)', size: 50, price: 1500, deposit: 300, maxKw: 25, status: 'reserved', currentTenant: 'شركة القهوة الفاخرة', currentKw: 18 },
+      { id: 'NV-103', zone: 'منطقة المطاعم والمقاهي (Zone A)', size: 75, price: 2200, deposit: 450, maxKw: 35, status: 'under_review', currentTenant: 'مطعم ليالي الشرق', currentKw: 28 },
+      { id: 'NV-201', zone: 'منطقة المعارض والتجزئة (Zone B)', size: 40, price: 1200, deposit: 250, maxKw: 15, status: 'available', currentTenant: null, currentKw: 0 },
+      { id: 'NV-202', zone: 'منطقة المعارض والتجزئة (Zone B)', size: 40, price: 1200, deposit: 250, maxKw: 15, status: 'reserved', currentTenant: 'العطور العمانية الاصيلة', currentKw: 8 },
+      { id: 'NV-203', zone: 'منطقة المعارض والتجزئة (Zone B)', size: 60, price: 1800, deposit: 350, maxKw: 20, status: 'available', currentTenant: null, currentKw: 0 },
+      { id: 'NV-301', zone: 'منطقة الكرفانات والترفيه (Zone C)', size: 100, price: 3000, deposit: 600, maxKw: 50, status: 'available', currentTenant: null, currentKw: 0 },
+      { id: 'NV-302', zone: 'منطقة الكرفانات والترفيه (Zone C)', size: 100, price: 3000, deposit: 600, maxKw: 50, status: 'reserved', currentTenant: 'مركز المغامرات والتسلية', currentKw: 42 },
+      { id: 'NV-303', zone: 'منطقة الكرفانات والترفيه (Zone C)', size: 120, price: 3600, deposit: 700, maxKw: 60, status: 'under_review', currentTenant: 'مقهى الفرسان', currentKw: 65 },
+      { id: 'NV-401', zone: 'منطقة كبار الشخصيات VIP (Zone D)', size: 150, price: 5000, deposit: 1000, maxKw: 80, status: 'available', currentTenant: null, currentKw: 0 },
+      { id: 'NV-402', zone: 'منطقة كبار الشخصيات VIP (Zone D)', size: 150, price: 5000, deposit: 1000, maxKw: 80, status: 'available', currentTenant: null, currentKw: 0 },
+      { id: 'NV-403', zone: 'منطقة كبار الشخصيات VIP (Zone D)', size: 200, price: 7000, deposit: 1500, maxKw: 100, status: 'reserved', currentTenant: 'مجموعة أبهر الدولية للفعاليات', currentKw: 75 },
+    ];
+
+    const companyCaravans = [
+      { id: 'caravan-abhar-1', title: 'كرفان أبهر الفاخر - VIP', size: 'الطول 8م × العرض 3م', powerReq: '12 kW', price: 850, image: 'https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?w=500&auto=format&fit=crop&q=60', desc: 'مجهز بتكييف مركزي، شاشات عرض، أثاث راقي وحمام خاص من أبهر للمقاولات.' },
+      { id: 'caravan-abhar-2', title: 'كرفان أبهر للخدمات المطابخ', size: 'الطول 6م × العرض 2.5م', powerReq: '18 kW', price: 700, image: 'https://images.unsplash.com/photo-1565120130276-dfbd9a7a3ad7?w=500&auto=format&fit=crop&q=60', desc: 'تجهيز استانلس ستيل بالكامل مع نوافذ خدمة واسعة وعزل حراري كامل.' },
+      { id: 'caravan-abhar-3', title: 'كرفان أبهر الميداني المتعدد', size: 'الطول 5م × العرض 2.4م', powerReq: '8 kW', price: 500, image: 'https://images.unsplash.com/photo-1510312305653-8ed496efae75?w=500&auto=format&fit=crop&q=60', desc: 'تصميم مرن يناسب المعارض، نقاط البيع المباشرة والمكاتب المؤقتة.' }
+    ];
+
+    const initialRequests = [
+      {
+        id: 'REQ-NOVA-8821',
+        tenantName: 'مطعم ليالي الشرق',
+        phone: '+968 9123 4567',
+        spaceId: 'NV-103',
+        spaceZone: 'منطقة المطاعم والمقاهي (Zone A)',
+        maxKwCapacity: 35,
+        totalKwDemand: 28,
+        machines: [
+          { name: 'قلاية كهربائية مزدوجة', count: 2, kw: 8 },
+          { name: 'ماكينة إسبانيول للقهوة', count: 1, kw: 4 },
+          { name: 'تكييف مركز كرفان', count: 2, kw: 8 }
+        ],
+        caravanType: 'company',
+        caravanDetails: { name: 'كرفان أبهر للخدمات المطابخ', price: 700 },
+        depositPaid: 450,
+        rentAmount: 2200,
+        status: 'under_review',
+        date: '2026-10-15',
+        warning: false
+      },
+      {
+        id: 'REQ-NOVA-8822',
+        tenantName: 'مقهى الفرسان',
+        phone: '+968 9988 7766',
+        spaceId: 'NV-303',
+        spaceZone: 'منطقة الكرفانات والترفيه (Zone C)',
+        maxKwCapacity: 60,
+        totalKwDemand: 65,
+        machines: [
+          { name: 'أجهزة ألعاب وتسلية ضخمة', count: 4, kw: 40 },
+          { name: 'أنظمة إضاءة ومؤثرات', count: 1, kw: 12 },
+          { name: 'مكيفات هواء صحراوية', count: 3, kw: 13 }
+        ],
+        caravanType: 'own',
+        caravanDetails: { length: 12, width: 4, height: 3.5, image: 'https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?w=500&auto=format&fit=crop&q=60' },
+        depositPaid: 700,
+        rentAmount: 3600,
+        status: 'under_review',
+        date: '2026-10-15',
+        warning: true
+      }
+    ];
+
+    function App() {
+      const [viewMode, setViewMode] = useState('tenant'); // 'tenant' or 'admin'
+      const [spaces, setSpaces] = useState(initialSpaces);
+      const [requests, setRequests] = useState(initialRequests);
+      
+      // Tenant Workflow
+      const [step, setStep] = useState(1);
+      const [selectedSpace, setSelectedSpace] = useState(null);
+      const [machinesList, setMachinesList] = useState([
+        { id: 1, name: 'ماكينة تحضير قهوة صناعية', count: 1, kw: 3.5 },
+        { id: 2, name: 'ثلاجة تبريد كبيرة', count: 2, kw: 2.0 }
+      ]);
+      const [caravanOption, setCaravanOption] = useState('none');
+      const [ownCaravan, setOwnCaravan] = useState({ length: '', width: '', height: '', photo: null });
+      const [selectedCompanyCaravan, setSelectedCompanyCaravan] = useState(null);
+      const [tenantRequestStatus, setTenantRequestStatus] = useState(null);
+      const [currentBookingReqId, setCurrentBookingReqId] = useState(null);
+      
+      // Modals
+      const [showPaymentModal, setShowPaymentModal] = useState(false);
+      const [paymentType, setPaymentType] = useState('deposit');
+      const [selectedAdminReq, setSelectedAdminReq] = useState(null);
+      const [rejectionReason, setRejectionReason] = useState('');
+      const [showRejectModal, setShowRejectModal] = useState(false);
+
+      const totalKwDemand = machinesList.reduce((acc, m) => acc + (m.count * (parseFloat(m.kw) || 0)), 0);
+
+      const handleSelectSpace = (space) => {
+        if (space.status !== 'available') return;
+        setSelectedSpace(space);
+        setStep(2);
+      };
+
+      const handleAddMachine = () => {
+        setMachinesList([
+          ...machinesList,
+          { id: Date.now(), name: '', count: 1, kw: 1.0 }
+        ]);
+      };
+
+      const handleRemoveMachine = (id) => {
+        setMachinesList(machinesList.filter(m => m.id !== id));
+      };
+
+      const handleMachineChange = (id, field, value) => {
+        setMachinesList(machinesList.map(m => m.id === id ? { ...m, [field]: value } : m));
+      };
+
+      const handleOpenDepositPayment = () => {
+        setPaymentType('deposit');
+        setShowPaymentModal(true);
+      };
+
+      const handleProcessPayment = () => {
+        setShowPaymentModal(false);
+        
+        if (paymentType === 'deposit') {
+          const reqId = 'REQ-NOVA-' + Math.floor(1000 + Math.random() * 9000);
+          const newReq = {
+            id: reqId,
+            tenantName: 'مؤسسة الأفق للفعاليات والأنشطة',
+            phone: '+968 9555 1234',
+            spaceId: selectedSpace.id,
+            spaceZone: selectedSpace.zone,
+            maxKwCapacity: selectedSpace.maxKw,
+            totalKwDemand: totalKwDemand,
+            machines: [...machinesList],
+            caravanType: caravanOption,
+            caravanDetails: caravanOption === 'company' ? selectedCompanyCaravan : (caravanOption === 'own' ? ownCaravan : null),
+            depositPaid: selectedSpace.deposit,
+            rentAmount: selectedSpace.price + (selectedCompanyCaravan ? selectedCompanyCaravan.price : 0),
+            status: 'under_review',
+            date: '2026-10-15',
+            warning: totalKwDemand > selectedSpace.maxKw
+          };
+
+          setSpaces(spaces.map(s => s.id === selectedSpace.id ? { ...s, status: 'under_review', currentTenant: 'مؤسسة الأفق للفعاليات والأنشطة', currentKw: totalKwDemand } : s));
+          setRequests([newReq, ...requests]);
+          setCurrentBookingReqId(reqId);
+          setTenantRequestStatus('deposit_paid');
+          setStep(5);
+        } else if (paymentType === 'rent') {
+          setTenantRequestStatus('rent_paid');
+          setSpaces(spaces.map(s => s.id === selectedSpace.id ? { ...s, status: 'reserved' } : s));
+          setRequests(requests.map(r => r.id === currentBookingReqId ? { ...r, status: 'approved_and_paid' } : r));
+        }
+      };
+
+      const handleAdminApprove = (req) => {
+        setRequests(requests.map(r => r.id === req.id ? { ...r, status: 'approved' } : r));
+        if (req.id === currentBookingReqId) {
+          setTenantRequestStatus('approved');
+        }
+      };
+
+      const handleAdminReject = () => {
+        if (!selectedAdminReq) return;
+        setRequests(requests.map(r => r.id === selectedAdminReq.id ? { ...r, status: 'rejected', rejectionReason } : r));
+        setSpaces(spaces.map(s => s.id === selectedAdminReq.spaceId ? { ...s, status: 'available', currentTenant: null, currentKw: 0 } : s));
+        setShowRejectModal(false);
+        setRejectionReason('');
+      };
+
+      return (
+        <div className="min-h-screen flex flex-col bg-abhar-navy text-slate-100 font-sans" dir="rtl">
+          
+          {/* TOP HEADER - OFFICIAL BRANDING */}
+          <header className="bg-abhar-navyLight border-b border-abhar-gold/30 sticky top-0 z-50 px-4 py-3 shadow-xl">
+            <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+              
+              {/* Branding Header Logo */}
+              <div className="flex items-center space-x-3 space-x-reverse">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-abhar-gold to-amber-200 flex items-center justify-center text-abhar-navy font-black text-2xl shadow-lg border border-abhar-goldLight/40">
+                  <i className="fa-solid fa-sparkles"></i>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h1 className="font-extrabold text-lg text-white tracking-wide">منصة نوفا للفعاليات</h1>
+                    <span className="text-[10px] bg-abhar-gold/20 text-abhar-gold font-bold px-2 py-0.5 rounded border border-abhar-gold/40">NOVA Platform</span>
+                  </div>
+                  <p className="text-xs text-abhar-goldLight font-bold">مؤسسة أبهر للتجارة والمقاولات <span className="text-[10px] text-slate-400 font-en font-normal">(ABHAR Trad & Contracting EST)</span></p>
+                </div>
+              </div>
+
+              {/* View Controller (Mobile App vs Admin Web) Switcher */}
+              <div className="flex items-center bg-abhar-navy p-1.5 rounded-xl border border-abhar-accent/50 shadow-inner">
+                <button
+                  onClick={() => setViewMode('tenant')}
+                  className={`flex items-center space-x-2 space-x-reverse px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                    viewMode === 'tenant'
+                      ? 'bg-gradient-to-r from-abhar-gold to-amber-500 text-abhar-navy shadow-md font-extrabold'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <i className="fa-solid fa-mobile-screen"></i>
+                  <span>تطبيق المستأجر (الموبايل)</span>
+                </button>
+                <button
+                  onClick={() => setViewMode('admin')}
+                  className={`flex items-center space-x-2 space-x-reverse px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                    viewMode === 'admin'
+                      ? 'bg-blue-600 text-white shadow-md font-extrabold'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <i className="fa-solid fa-chart-line"></i>
+                  <span>لوحة تحكم الإدارة (الويب)</span>
+                </button>
+              </div>
+
+            </div>
+          </header>
+
+          {/* MAIN CONTAINER */}
+          <main className="flex-1 p-4 md:p-6 max-w-7xl w-full mx-auto">
+            
+            {/* VIEW 1: TENANT MOBILE APP */}
+            {viewMode === 'tenant' && (
+              <div className="flex flex-col items-center">
+                
+                {/* Mobile Device Mockup */}
+                <div className="w-full max-w-md bg-abhar-navyLight rounded-[38px] border-[8px] border-slate-800 shadow-2xl overflow-hidden relative min-h-[780px] flex flex-col">
+                  
+                  {/* Phone Header */}
+                  <div className="bg-abhar-navy px-6 pt-3 pb-2 flex justify-between items-center text-xs text-slate-400 border-b border-slate-800">
+                    <span className="font-semibold text-slate-300">9:41</span>
+                    <div className="w-16 h-3 bg-slate-800 rounded-full mx-auto"></div>
+                    <div className="flex space-x-1.5 space-x-reverse">
+                      <i className="fa-solid fa-signal"></i>
+                      <i className="fa-solid fa-wifi"></i>
+                      <i className="fa-solid fa-battery-full text-abhar-gold"></i>
+                    </div>
+                  </div>
+
+                  {/* App Bar Header */}
+                  <div className="bg-abhar-navyLight p-3 border-b border-slate-800 flex justify-between items-center px-4">
+                    <div className="flex items-center space-x-2 space-x-reverse">
+                      <div className="w-8 h-8 rounded-lg bg-abhar-gold/20 text-abhar-gold flex items-center justify-center text-sm font-bold border border-abhar-gold/30">
+                        <i className="fa-solid fa-sparkles"></i>
+                      </div>
+                      <div>
+                        <h2 className="text-xs font-black text-white leading-tight">منصة نوفا للفعاليات</h2>
+                        <p className="text-[9px] text-abhar-goldLight font-semibold">مؤسسة أبهر للتجارة والمقاولات</p>
+                      </div>
+                    </div>
+                    {step > 1 && step < 5 && (
+                      <button 
+                        onClick={() => setStep(step - 1)} 
+                        className="text-xs text-slate-300 hover:text-white flex items-center gap-1 bg-slate-800 px-2.5 py-1 rounded-md"
+                      >
+                        <i className="fa-solid fa-arrow-right"></i>
+                        <span>رجوع</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Step Progress Tracker Bar */}
+                  <div className="bg-abhar-navy px-3 py-2 border-b border-slate-800 flex justify-between items-center text-[10px]">
+                    <span className={`px-2 py-0.5 rounded ${step === 1 ? 'bg-abhar-gold text-abhar-navy font-bold' : 'text-slate-400'}`}>1. الخريطة</span>
+                    <i className="fa-solid fa-chevron-left text-slate-600 text-[8px]"></i>
+                    <span className={`px-2 py-0.5 rounded ${step === 2 ? 'bg-abhar-gold text-abhar-navy font-bold' : 'text-slate-400'}`}>2. الأحمال</span>
+                    <i className="fa-solid fa-chevron-left text-slate-600 text-[8px]"></i>
+                    <span className={`px-2 py-0.5 rounded ${step === 3 ? 'bg-abhar-gold text-abhar-navy font-bold' : 'text-slate-400'}`}>3. الكرفان</span>
+                    <i className="fa-solid fa-chevron-left text-slate-600 text-[8px]"></i>
+                    <span className={`px-2 py-0.5 rounded ${step >= 4 ? 'bg-abhar-gold text-abhar-navy font-bold' : 'text-slate-400'}`}>4. الدفع</span>
+                  </div>
+
+                  {/* MOBILE BODY CONTENT */}
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                    
+                    {/* STEP 1: INTERACTIVE MAP */}
+                    {step === 1 && (
+                      <div className="space-y-4">
+                        <div className="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                          <h3 className="font-bold text-xs text-white mb-1 flex items-center gap-2">
+                            <i className="fa-solid fa-map-location-dot text-abhar-gold"></i>
+                            مخطط أرض منصة نوفا للفعاليات
+                          </h3>
+                          <p className="text-[11px] text-slate-400">انقر على المساحة الخضراء (المتاحة) لاختيار موقعك وحجزه من مؤسسة أبهر.</p>
+                        </div>
+
+                        {/* Map Status Legend */}
+                        <div className="flex items-center justify-around bg-abhar-navy p-2 rounded-lg border border-slate-800 text-[11px]">
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                            <span className="text-slate-300">متاح</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                            <span className="text-slate-300">مراجعة</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                            <span className="text-slate-300">محجوز</span>
+                          </div>
+                        </div>
+
+                        {/* Visual Site Layout Map Grid */}
+                        <div className="bg-abhar-navy p-3 rounded-2xl border border-slate-800 grid-pattern min-h-[320px] flex flex-col justify-center">
+                          <p className="text-[9px] text-abhar-goldLight text-center mb-2 font-mono">NORTH ENTRANCE / بوابة نوفا الشمالية</p>
+                          
+                          <div className="grid grid-cols-2 gap-2.5">
+                            {spaces.map((s) => {
+                              let statusBg = "bg-emerald-950/80 border-emerald-500/60 text-emerald-300 hover:bg-emerald-900/90 hover:border-emerald-400 cursor-pointer";
+                              let badgeColor = "bg-emerald-500 text-slate-950";
+                              let statusText = "متاح";
+
+                              if (s.status === 'reserved') {
+                                statusBg = "bg-rose-950/40 border-rose-800/50 text-rose-400/60 cursor-not-allowed opacity-75";
+                                badgeColor = "bg-rose-500/80 text-white";
+                                statusText = "محجوز";
+                              } else if (s.status === 'under_review') {
+                                statusBg = "bg-amber-950/50 border-amber-500/60 text-amber-300 cursor-not-allowed";
+                                badgeColor = "bg-amber-500 text-slate-950";
+                                statusText = "قيد المراجعة";
+                              }
+
+                              const isSelected = selectedSpace?.id === s.id;
+
+                              return (
+                                <div
+                                  key={s.id}
+                                  onClick={() => handleSelectSpace(s)}
+                                  className={`p-3 rounded-xl border-2 transition-all flex flex-col justify-between h-28 ${statusBg} ${
+                                    isSelected ? 'ring-2 ring-abhar-gold scale-[1.02] shadow-lg' : ''
+                                  }`}
+                                >
+                                  <div className="flex justify-between items-start">
+                                    <span className="font-extrabold text-xs tracking-wide font-mono">{s.id}</span>
+                                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${badgeColor}`}>
+                                      {statusText}
+                                    </span>
+                                  </div>
+                                  
+                                  <div className="text-[11px] space-y-0.5">
+                                    <p className="font-semibold">{s.size} م²</p>
+                                    <p className="text-[10px] opacity-80">{s.price} ر.ع / الفعالية</p>
+                                    <p className="text-[9px] opacity-75 flex items-center gap-1">
+                                      <i className="fa-solid fa-bolt text-amber-400"></i>
+                                      حتى {s.maxKw} kW
+                                    </p>
+                                  </div>
+
+                                  {s.status === 'reserved' && (
+                                    <p className="text-[9px] truncate text-slate-400 border-t border-rose-900/40 pt-1 mt-1">
+                                      {s.currentTenant}
+                                    </p>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          <p className="text-[9px] text-abhar-goldLight text-center mt-3 font-mono">SOUTH EXIT / المخرج وبوابة الكرفانات</p>
+                        </div>
+
+                        {/* Selected Space Preview Box */}
+                        {selectedSpace && (
+                          <div className="bg-abhar-navy p-4 rounded-xl border border-abhar-gold/50 space-y-3">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h4 className="font-bold text-white text-sm">البوث المحدد: {selectedSpace.id}</h4>
+                                <p className="text-xs text-abhar-goldLight">{selectedSpace.zone}</p>
+                              </div>
+                              <span className="text-base font-black text-abhar-gold">{selectedSpace.price} ر.ع</span>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2 text-xs bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                              <div><span className="text-slate-400">التأمين المطلوب:</span> <span className="font-bold text-amber-400">{selectedSpace.deposit} ر.ع</span></div>
+                              <div><span className="text-slate-400">سعة الكهرباء:</span> <span className="font-bold text-sky-400">{selectedSpace.maxKw} kW</span></div>
+                            </div>
+
+                            <button
+                              onClick={() => setStep(2)}
+                              className="w-full py-3 bg-gradient-to-r from-abhar-gold to-amber-500 text-abhar-navy font-extrabold rounded-xl shadow-lg hover:brightness-110 transition flex items-center justify-center gap-2 text-xs"
+                            >
+                              <span>متابعة لتسجيل الأحمال الكهربائية</span>
+                              <i className="fa-solid fa-arrow-left"></i>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* STEP 2: ELECTRICAL LOADS CALCULATOR */}
+                    {step === 2 && (
+                      <div className="space-y-4">
+                        <div className="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                          <div className="flex justify-between items-center mb-1">
+                            <h3 className="font-bold text-xs text-white flex items-center gap-2">
+                              <i className="fa-solid fa-plug-circle-bolt text-amber-400"></i>
+                              حاسبة الأحمال الكهربائية من أبهر
+                            </h3>
+                            <span className="text-[10px] text-sky-400 bg-sky-950 border border-sky-800 px-2 py-0.5 rounded">
+                              الحد الأقصى: {selectedSpace?.maxKw} kW
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-400">سجل أجهزتك المخطط استخدامها ليراجعها الفريق الهندسي بشركة أبهر للتأكد من التغذية.</p>
+                        </div>
+
+                        {/* Meter Progress Bar */}
+                        <div className="bg-abhar-navy p-3 rounded-xl border border-slate-800 space-y-2">
+                          <div className="flex justify-between text-xs font-bold">
+                            <span className="text-slate-300">إجمالي الأحمال المسجلة:</span>
+                            <span className={totalKwDemand > selectedSpace?.maxKw ? "text-rose-400 font-extrabold animate-pulse" : "text-emerald-400"}>
+                              {totalKwDemand.toFixed(1)} kW / {selectedSpace?.maxKw} kW
+                            </span>
+                          </div>
+                          <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full transition-all duration-300 ${
+                                totalKwDemand > selectedSpace?.maxKw ? 'bg-rose-500' : 'bg-gradient-to-r from-emerald-500 to-amber-400'
+                              }`}
+                              style={{ width: `${Math.min(100, (totalKwDemand / selectedSpace?.maxKw) * 100)}%` }}
+                            ></div>
+                          </div>
+
+                          {totalKwDemand > selectedSpace?.maxKw && (
+                            <div className="bg-rose-950/70 border border-rose-800 p-2 rounded-lg text-[10px] text-rose-300 flex items-start gap-1.5">
+                              <i className="fa-solid fa-triangle-exclamation text-rose-400 text-xs mt-0.5"></i>
+                              <span>تنبيه: الأحمال تتجاوز قدرة البوث! سيتطلب ذلك مراجعة مهندس أبهر في الموقع لتوفير كابل إضافي.</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Devices List Input */}
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <label className="text-xs font-bold text-slate-300">قائمة الأجهزة والماكينات:</label>
+                            <button
+                              onClick={handleAddMachine}
+                              className="text-[10px] text-abhar-gold font-bold bg-abhar-gold/10 px-2.5 py-1 rounded-lg border border-abhar-gold/30 flex items-center gap-1"
+                            >
+                              <i className="fa-solid fa-plus text-[9px]"></i>
+                              إضافة جهاز
+                            </button>
+                          </div>
+
+                          {machinesList.map((m) => (
+                            <div key={m.id} className="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-2">
+                              <div className="flex justify-between items-center gap-2">
+                                <input
+                                  type="text"
+                                  placeholder="اسم الجهاز (مثلاً: ماكينة قهوة، ثلاجة...)"
+                                  value={m.name}
+                                  onChange={(e) => handleMachineChange(m.id, 'name', e.target.value)}
+                                  className="bg-abhar-navy border border-slate-800 text-xs rounded-lg p-2 text-white flex-1 focus:border-abhar-gold outline-none"
+                                />
+                                <button onClick={() => handleRemoveMachine(m.id)} className="text-slate-500 hover:text-rose-400 p-1.5">
+                                  <i className="fa-solid fa-trash-can text-xs"></i>
+                                </button>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-2 text-xs">
+                                <div>
+                                  <label className="text-[9px] text-slate-400 block mb-0.5">العدد</label>
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    value={m.count}
+                                    onChange={(e) => handleMachineChange(m.id, 'count', parseInt(e.target.value) || 1)}
+                                    className="bg-abhar-navy border border-slate-800 rounded-lg p-1.5 text-white w-full text-center font-mono"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-[9px] text-slate-400 block mb-0.5">القدرة (kW)</label>
+                                  <input
+                                    type="number"
+                                    step="0.5"
+                                    value={m.kw}
+                                    onChange={(e) => handleMachineChange(m.id, 'kw', parseFloat(e.target.value) || 0)}
+                                    className="bg-abhar-navy border border-slate-800 rounded-lg p-1.5 text-white w-full text-center font-mono"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        <button
+                          onClick={() => setStep(3)}
+                          className="w-full py-3 bg-gradient-to-r from-abhar-gold to-amber-500 text-abhar-navy font-extrabold rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-xs"
+                        >
+                          <span>الانتقال لمرحلة تحديد الكرفان</span>
+                          <i className="fa-solid fa-arrow-left"></i>
+                        </button>
+                      </div>
+                    )}
+
+                    {/* STEP 3: CARAVAN SETUP */}
+                    {step === 3 && (
+                      <div className="space-y-4">
+                        <div className="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                          <h3 className="font-bold text-xs text-white mb-1 flex items-center gap-2">
+                            <i className="fa-solid fa-caravan text-abhar-gold"></i>
+                            خيارات الكرفان من أبهر للمقاولات
+                          </h3>
+                          <p className="text-[11px] text-slate-400">اختر نوع الكرفان لتجهيز الموقع بالكامل قبل انطلاق الفعالية.</p>
+                        </div>
+
+                        {/* Caravan Options Selector */}
+                        <div className="space-y-2.5">
+                          {/* Option 1 */}
+                          <div 
+                            onClick={() => { setCaravanOption('none'); setSelectedCompanyCaravan(null); }}
+                            className={`p-3 rounded-xl border-2 cursor-pointer transition flex items-center justify-between ${
+                              caravanOption === 'none' ? 'bg-abhar-gold/10 border-abhar-gold text-white' : 'bg-slate-900 border-slate-800 text-slate-400'
+                            }`}
+                          >
+                            <div className="flex items-center space-x-3 space-x-reverse">
+                              <i className="fa-solid fa-store text-base"></i>
+                              <div>
+                                <h4 className="font-bold text-xs">بدون كرفان</h4>
+                                <p className="text-[10px] text-slate-400">استخدام المساحة كبوث مفتوح أو مظلة</p>
+                              </div>
+                            </div>
+                            <input type="radio" checked={caravanOption === 'none'} readOnly className="accent-abhar-gold" />
+                          </div>
+
+                          {/* Option 2 */}
+                          <div 
+                            onClick={() => { setCaravanOption('own'); setSelectedCompanyCaravan(null); }}
+                            className={`p-3 rounded-xl border-2 cursor-pointer transition flex items-center justify-between ${
+                              caravanOption === 'own' ? 'bg-abhar-gold/10 border-abhar-gold text-white' : 'bg-slate-900 border-slate-800 text-slate-400'
+                            }`}
+                          >
+                            <div className="flex items-center space-x-3 space-x-reverse">
+                              <i className="fa-solid fa-truck-pickup text-base"></i>
+                              <div>
+                                <h4 className="font-bold text-xs">لدي كرفان خاص</h4>
+                                <p className="text-[10px] text-slate-400">إدخال الأبعاد وتأكيد موافقة الهندسة</p>
+                              </div>
+                            </div>
+                            <input type="radio" checked={caravanOption === 'own'} readOnly className="accent-abhar-gold" />
+                          </div>
+
+                          {/* Option 3 */}
+                          <div 
+                            onClick={() => setCaravanOption('company')}
+                            className={`p-3 rounded-xl border-2 cursor-pointer transition flex items-center justify-between ${
+                              caravanOption === 'company' ? 'bg-abhar-gold/10 border-abhar-gold text-white' : 'bg-slate-900 border-slate-800 text-slate-400'
+                            }`}
+                          >
+                            <div className="flex items-center space-x-3 space-x-reverse">
+                              <i className="fa-solid fa-campground text-base text-amber-400"></i>
+                              <div>
+                                <h4 className="font-bold text-xs">استئجار كرفان من كتالوج مؤسسة أبهر</h4>
+                                <p className="text-[10px] text-slate-400">اختيار تصميم جاهز ومجهز من الشركة</p>
+                              </div>
+                            </div>
+                            <input type="radio" checked={caravanOption === 'company'} readOnly className="accent-abhar-gold" />
+                          </div>
+                        </div>
+
+                        {/* OWN Caravan Details Form */}
+                        {caravanOption === 'own' && (
+                          <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-3 text-xs">
+                            <h4 className="font-bold text-slate-200">أبعاد وصورة الكرفان الخاص:</h4>
+                            <div className="grid grid-cols-3 gap-2">
+                              <div>
+                                <label className="text-[9px] text-slate-400 block mb-0.5">الطول (م)</label>
+                                <input type="number" placeholder="6" value={ownCaravan.length} onChange={(e) => setOwnCaravan({...ownCaravan, length: e.target.value})} className="w-full bg-abhar-navy border border-slate-800 rounded-lg p-2 text-white font-mono text-center" />
+                              </div>
+                              <div>
+                                <label className="text-[9px] text-slate-400 block mb-0.5">العرض (م)</label>
+                                <input type="number" placeholder="2.5" value={ownCaravan.width} onChange={(e) => setOwnCaravan({...ownCaravan, width: e.target.value})} className="w-full bg-abhar-navy border border-slate-800 rounded-lg p-2 text-white font-mono text-center" />
+                              </div>
+                              <div>
+                                <label className="text-[9px] text-slate-400 block mb-0.5">الارتفاع (م)</label>
+                                <input type="number" placeholder="3" value={ownCaravan.height} onChange={(e) => setOwnCaravan({...ownCaravan, height: e.target.value})} className="w-full bg-abhar-navy border border-slate-800 rounded-lg p-2 text-white font-mono text-center" />
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="text-[9px] text-slate-400 block mb-1">صورة الكرفان (لمعاينة مهندسي أبهر)</label>
+                              <div className="border-2 border-dashed border-slate-800 bg-abhar-navy rounded-xl p-3 text-center cursor-pointer">
+                                <i className="fa-solid fa-cloud-arrow-up text-abhar-gold text-lg mb-1"></i>
+                                <p className="text-[10px] text-slate-300 font-bold">انقر لرفع صورة الكرفان</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* COMPANY Caravan Catalog Selection */}
+                        {caravanOption === 'company' && (
+                          <div className="space-y-2.5">
+                            <h4 className="font-bold text-xs text-slate-300">كتالوج كرفانات مؤسسة أبهر المتاحة:</h4>
+                            {companyCaravans.map((c) => {
+                              const isSelected = selectedCompanyCaravan?.id === c.id;
+                              return (
+                                <div 
+                                  key={c.id} 
+                                  onClick={() => setSelectedCompanyCaravan(c)}
+                                  className={`bg-slate-900 rounded-xl border overflow-hidden cursor-pointer transition flex ${
+                                    isSelected ? 'border-abhar-gold ring-2 ring-abhar-gold/30' : 'border-slate-800'
+                                  }`}
+                                >
+                                  <img src={c.image} alt={c.title} className="w-20 h-20 object-cover" />
+                                  <div className="p-2 flex-1 flex flex-col justify-between text-xs">
+                                    <div>
+                                      <div className="flex justify-between items-start">
+                                        <h5 className="font-bold text-white text-[11px]">{c.title}</h5>
+                                        <span className="text-abhar-gold font-extrabold text-xs">+{c.price} ر.ع</span>
+                                      </div>
+                                      <p className="text-[9px] text-slate-400 line-clamp-1 mt-0.5">{c.desc}</p>
+                                    </div>
+                                    <div className="flex justify-between items-center text-[9px] text-slate-400">
+                                      <span>{c.size}</span>
+                                      <span className="text-amber-400 font-mono">{c.powerReq}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        <button
+                          onClick={() => setStep(4)}
+                          className="w-full py-3 bg-gradient-to-r from-abhar-gold to-amber-500 text-abhar-navy font-extrabold rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-xs"
+                        >
+                          <span>الانتقال لمرحلة دفع التأمين المبدئي</span>
+                          <i className="fa-solid fa-arrow-left"></i>
+                        </button>
+                      </div>
+                    )}
+
+                    {/* STEP 4: PAY SECURITY DEPOSIT */}
+                    {step === 4 && selectedSpace && (
+                      <div className="space-y-4">
+                        <div className="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                          <h3 className="font-bold text-xs text-white mb-1 flex items-center gap-2">
+                            <i className="fa-solid fa-shield-halved text-abhar-gold"></i>
+                            سداد التأمين لمؤسسة أبهر
+                          </h3>
+                          <p className="text-[11px] text-slate-400">يتطلب حجز البوث المبدئي دفع رسوم التأمين المستردة بعد انتهاء الفعالية.</p>
+                        </div>
+
+                        {/* Order Summary */}
+                        <div className="bg-abhar-navy p-4 rounded-xl border border-slate-800 space-y-3 text-xs">
+                          <h4 className="font-bold text-white border-b border-slate-800 pb-2">ملخص حجز منصة نوفا:</h4>
+                          
+                          <div className="flex justify-between text-slate-300">
+                            <span>رقم المساحة والموقع:</span>
+                            <span className="font-bold text-white">{selectedSpace.id} ({selectedSpace.size} م²)</span>
+                          </div>
+
+                          <div className="flex justify-between text-slate-300">
+                            <span>إجمالي الأحمال المسجلة:</span>
+                            <span className="font-bold text-amber-400">{totalKwDemand.toFixed(1)} kW</span>
+                          </div>
+
+                          <div className="flex justify-between text-slate-300">
+                            <span>خيار الكرفان:</span>
+                            <span className="font-bold text-slate-200">
+                              {caravanOption === 'none' && 'بدون كرفان'}
+                              {caravanOption === 'own' && 'كرفان خاص بالعميل'}
+                              {caravanOption === 'company' && selectedCompanyCaravan?.title}
+                            </span>
+                          </div>
+
+                          <div className="border-t border-slate-800 pt-2 flex justify-between items-center font-bold text-xs">
+                            <span className="text-amber-400">مبلغ التأمين المطلوب دفع فوراً:</span>
+                            <span className="text-amber-400 text-base font-black">{selectedSpace.deposit} ر.ع</span>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={handleOpenDepositPayment}
+                          className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black rounded-xl shadow-xl transition flex items-center justify-center gap-2 text-xs"
+                        >
+                          <i className="fa-solid fa-credit-card"></i>
+                          <span>دفع التأمين المبدئي الآن ({selectedSpace.deposit} ر.ع)</span>
+                        </button>
+                      </div>
+                    )}
+
+                    {/* STEP 5: STATUS TRACKER */}
+                    {step === 5 && (
+                      <div className="space-y-4">
+                        <div className="bg-abhar-navy p-4 rounded-2xl border border-slate-800 space-y-4 text-center">
+                          <div className="w-12 h-12 rounded-full bg-abhar-gold/20 text-abhar-gold flex items-center justify-center mx-auto text-xl border border-abhar-gold/40">
+                            <i className="fa-solid fa-sparkles"></i>
+                          </div>
+                          <div>
+                            <h3 className="font-extrabold text-white text-sm">متابعة طلب حجز منصة نوفا</h3>
+                            <p className="text-xs text-slate-400">رقم الطلب: <span className="font-mono text-abhar-gold">{currentBookingReqId}</span></p>
+                          </div>
+
+                          {/* Progress Tracker */}
+                          <div className="space-y-3 text-right text-xs pt-2">
+                            <div className="flex items-center space-x-3 space-x-reverse">
+                              <div className="w-5 h-5 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center text-[10px] font-bold">
+                                <i className="fa-solid fa-check"></i>
+                              </div>
+                              <div>
+                                <p className="font-bold text-white">تم سداد مبلغ التأمين المبدئي</p>
+                                <p className="text-[10px] text-slate-400">تم حجز المساحة مؤقتاً باسمك</p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center space-x-3 space-x-reverse">
+                              <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                                tenantRequestStatus === 'approved' || tenantRequestStatus === 'rent_paid'
+                                  ? 'bg-emerald-500 text-slate-950'
+                                  : 'bg-amber-500 text-slate-950 animate-pulse'
+                              }`}>
+                                {tenantRequestStatus === 'approved' || tenantRequestStatus === 'rent_paid' ? <i className="fa-solid fa-check"></i> : '2'}
+                              </div>
+                              <div>
+                                <p className="font-bold text-white">مراجعة مهندسي مؤسسة أبهر للأحمال</p>
+                                <p className="text-[10px] text-slate-400">
+                                  {tenantRequestStatus === 'approved' || tenantRequestStatus === 'rent_paid'
+                                    ? 'تمت موافقة الإدارة والهندسة بنجاح!'
+                                    : 'قيد المراجعة والتدقيق الفني حالياً...'}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center space-x-3 space-x-reverse">
+                              <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                                tenantRequestStatus === 'rent_paid'
+                                  ? 'bg-emerald-500 text-slate-950'
+                                  : 'bg-slate-800 text-slate-500'
+                              }`}>
+                                {tenantRequestStatus === 'rent_paid' ? <i className="fa-solid fa-check"></i> : '3'}
+                              </div>
+                              <div>
+                                <p className="font-bold text-white">سداد قيمة الإيجار واستلام التصريح</p>
+                                <p className="text-[10px] text-slate-400">يفتح زر الدفع فور صدور موافقة الإدارة</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* ACTION BUTTON ON APPROVAL */}
+                          {tenantRequestStatus === 'approved' && (
+                            <div className="bg-emerald-950/60 border border-emerald-500/50 p-3 rounded-xl space-y-2 text-right">
+                              <p className="text-xs text-emerald-300 font-bold">🎉 تمت موافقة إدارة مؤسسة أبهر على طلبك!</p>
+                              <button
+                                onClick={() => { setPaymentType('rent'); setShowPaymentModal(true); }}
+                                className="w-full py-2.5 bg-gradient-to-r from-abhar-gold to-amber-500 text-abhar-navy font-black rounded-lg text-xs"
+                              >
+                                إتمام دفع الإيجار ({selectedSpace?.price + (selectedCompanyCaravan?.price || 0)} ر.ع)
+                              </button>
+                            </div>
+                          )}
+
+                          {/* CONFIRMED QR CODE */}
+                          {tenantRequestStatus === 'rent_paid' && (
+                            <div className="bg-abhar-navy border border-abhar-gold/60 p-4 rounded-xl space-y-3">
+                              <span className="text-[10px] bg-abhar-gold/20 text-abhar-gold font-bold px-2 py-0.5 rounded border border-abhar-gold/40">تصريح دخول منصة نوفا الرسمي</span>
+                              <div className="w-28 h-28 bg-white p-2 rounded-xl mx-auto flex items-center justify-center shadow-lg">
+                                <svg viewBox="0 0 100 100" className="w-full h-full text-slate-950 fill-current">
+                                  <rect x="10" y="10" width="30" height="30" />
+                                  <rect x="60" y="10" width="30" height="30" />
+                                  <rect x="10" y="60" width="30" height="30" />
+                                  <rect x="20" y="20" width="10" height="10" fill="white" />
+                                  <rect x="70" y="20" width="10" height="10" fill="white" />
+                                  <rect x="20" y="70" width="10" height="10" fill="white" />
+                                  <rect x="50" y="50" width="15" height="15" />
+                                  <rect x="70" y="70" width="20" height="20" />
+                                </svg>
+                              </div>
+                              <p className="text-[10px] text-slate-300 font-bold">يرجى إبراز كود QR لبوابة أرض الفعاليات</p>
+                            </div>
+                          )}
+                        </div>
+
+                        <button
+                          onClick={() => { setStep(1); setSelectedSpace(null); setTenantRequestStatus(null); }}
+                          className="w-full py-2 bg-slate-900 text-slate-400 text-xs rounded-xl border border-slate-800 hover:text-white"
+                        >
+                          إعادة التجربة بحجز جديد
+                        </button>
+                      </div>
+                    )}
+
+                  </div>
+
+                  {/* App Bottom Footer */}
+                  <div className="bg-abhar-navy border-t border-slate-800 p-2 flex justify-around items-center text-slate-500 text-[10px]">
+                    <div className="flex flex-col items-center text-abhar-gold">
+                      <i className="fa-solid fa-map-marked-alt text-sm"></i>
+                      <span className="mt-0.5">منصة نوفا</span>
+                    </div>
+                    <div className="flex flex-col items-center hover:text-slate-300 cursor-pointer">
+                      <i className="fa-solid fa-receipt text-sm"></i>
+                      <span className="mt-0.5">حجوزاتي</span>
+                    </div>
+                    <div className="flex flex-col items-center hover:text-slate-300 cursor-pointer">
+                      <i className="fa-solid fa-[#headset] text-sm"></i>
+                      <span className="mt-0.5">دعم أبهر</span>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            )}
+
+            {/* VIEW 2: ADMIN WEB DASHBOARD */}
+            {viewMode === 'admin' && (
+              <div className="space-y-6">
+                
+                {/* Admin Top Dashboard Banner */}
+                <div className="flex flex-wrap justify-between items-center gap-4 bg-abhar-navyLight p-5 rounded-2xl border border-abhar-gold/30 shadow-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-abhar-gold/20 text-abhar-gold flex items-center justify-center text-2xl border border-abhar-gold/40">
+                      <i className="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-black text-white flex items-center gap-2">
+                        لوحة تحكم منصة نوفا للفعاليات - إدارة الموقع
+                      </h2>
+                      <p className="text-xs text-abhar-goldLight font-bold">مؤسسة أبهر للتجارة والمقاولات (ABHAR Trad & Contracting EST)</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2 space-x-reverse">
+                    <span className="text-xs text-emerald-400 bg-emerald-950/80 border border-emerald-800 px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-bold">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                      شبكة الكهرباء الرئيسية نشطة (Abhar Power Grid)
+                    </span>
+                  </div>
+                </div>
+
+                {/* STATS OVERVIEW CARDS */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="bg-abhar-navyLight p-4 rounded-2xl border border-slate-800 flex justify-between items-center">
+                    <div>
+                      <p className="text-xs text-slate-400 font-semibold">المساحات المؤجرة منصة نوفا</p>
+                      <h3 className="text-2xl font-black text-white mt-1">
+                        {spaces.filter(s => s.status === 'reserved').length} / {spaces.length}
+                      </h3>
+                      <p className="text-[10px] text-emerald-400 mt-1">نسبة الإشغال: {Math.round((spaces.filter(s => s.status === 'reserved').length / spaces.length) * 100)}%</p>
+                    </div>
+                    <div className="w-10 h-10 rounded-xl bg-abhar-gold/10 text-abhar-gold flex items-center justify-center text-lg border border-abhar-gold/30">
+                      <i className="fa-solid fa-border-all"></i>
+                    </div>
+                  </div>
+
+                  <div className="bg-abhar-navyLight p-4 rounded-2xl border border-slate-800 flex justify-between items-center">
+                    <div>
+                      <p className="text-xs text-slate-400 font-semibold">الأحمال الكلية المحسوبة</p>
+                      <h3 className="text-2xl font-black text-amber-400 mt-1">
+                        {requests.reduce((acc, r) => acc + (r.totalKwDemand || 0), 0)} kW
+                      </h3>
+                      <p className="text-[10px] text-slate-400 mt-1">سعة المحولات 500 kW</p>
+                    </div>
+                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-lg border border-amber-500/30">
+                      <i className="fa-solid fa-bolt-lightning"></i>
+                    </div>
+                  </div>
+
+                  <div className="bg-abhar-navyLight p-4 rounded-2xl border border-slate-800 flex justify-between items-center">
+                    <div>
+                      <p className="text-xs text-slate-400 font-semibold">التأمينات المحصلة باسم أبهر</p>
+                      <h3 className="text-2xl font-black text-sky-400 mt-1">
+                        {requests.reduce((acc, r) => acc + (r.depositPaid || 0), 0)} ر.ع
+                      </h3>
+                      <p className="text-[10px] text-sky-300/80 mt-1">مبالغ مؤمنة لدى المؤسسة</p>
+                    </div>
+                    <div className="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center text-lg border border-sky-500/30">
+                      <i className="fa-solid fa-vault"></i>
+                    </div>
+                  </div>
+
+                  <div className="bg-abhar-navyLight p-4 rounded-2xl border border-slate-800 flex justify-between items-center">
+                    <div>
+                      <p className="text-xs text-slate-400 font-semibold">طلبات تنتظر موافقة أبهر</p>
+                      <h3 className="text-2xl font-black text-rose-400 mt-1">
+                        {requests.filter(r => r.status === 'under_review').length}
+                      </h3>
+                      <p className="text-[10px] text-rose-300 mt-1">يتطلب تدقيق الأحمال</p>
+                    </div>
+                    <div className="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center text-lg border border-rose-500/30">
+                      <i className="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ADMIN WORKSPACE GRID */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  
+                  {/* LEFT: REQUESTS TABLE */}
+                  <div className="lg:col-span-2 space-y-4">
+                    <div className="bg-abhar-navyLight p-5 rounded-2xl border border-slate-800 shadow-lg">
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="font-extrabold text-base text-white flex items-center gap-2">
+                          <i className="fa-solid fa-list-check text-abhar-gold"></i>
+                          جدول إدارة الطلبات والاعتماد الفني (منصة نوفا)
+                        </h3>
+                        <span className="text-xs text-slate-400 font-mono">Total Requests: {requests.length}</span>
+                      </div>
+
+                      {/* Table */}
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-right text-xs">
+                          <thead>
+                            <tr className="border-b border-slate-800 text-slate-400 font-semibold bg-abhar-navy">
+                              <th className="p-3">رقم الطلب / المستأجر</th>
+                              <th className="p-3">البوث</th>
+                              <th className="p-3">الحمل الكهربائي</th>
+                              <th className="p-3">الكرفان</th>
+                              <th className="p-3">التأمين</th>
+                              <th className="p-3">الحالة</th>
+                              <th className="p-3 text-center">القرار</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-800">
+                            {requests.map((req) => (
+                              <tr key={req.id} className="hover:bg-slate-800/40 transition">
+                                <td className="p-3">
+                                  <p className="font-bold text-white">{req.tenantName}</p>
+                                  <p className="text-[10px] text-slate-400 font-mono">{req.id} | {req.phone}</p>
+                                </td>
+                                <td className="p-3">
+                                  <span className="font-bold text-abhar-gold bg-abhar-navy border border-abhar-gold/30 px-2 py-0.5 rounded font-mono">
+                                    {req.spaceId}
+                                  </span>
+                                </td>
+                                <td className="p-3">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className={`font-mono font-bold ${req.totalKwDemand > req.maxKwCapacity ? 'text-rose-400' : 'text-amber-400'}`}>
+                                      {req.totalKwDemand} kW
+                                    </span>
+                                    {req.totalKwDemand > req.maxKwCapacity && (
+                                      <i className="fa-solid fa-triangle-exclamation text-rose-500 text-xs" title="تجاوز سعة الكابل!"></i>
+                                    )}
+                                  </div>
+                                  <p className="text-[9px] text-slate-500">من أصل {req.maxKwCapacity} kW</p>
+                                </td>
+                                <td className="p-3 text-slate-300">
+                                  {req.caravanType === 'company' && 'كتالوج أبهر'}
+                                  {req.caravanType === 'own' && 'كرفان خاص'}
+                                  {req.caravanType === 'none' && 'بدون'}
+                                </td>
+                                <td className="p-3 font-mono font-bold text-emerald-400">
+                                  {req.depositPaid} ر.ع
+                                </td>
+                                <td className="p-3">
+                                  {req.status === 'under_review' && (
+                                    <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[10px] font-bold">
+                                      بانتظار الموافقة
+                                    </span>
+                                  )}
+                                  {req.status === 'approved' && (
+                                    <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold">
+                                      مقبول (بانتظار الإيجار)
+                                    </span>
+                                  )}
+                                  {req.status === 'approved_and_paid' && (
+                                    <span className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/30 text-[10px] font-bold">
+                                      مكتمل الحجز
+                                    </span>
+                                  )}
+                                  {req.status === 'rejected' && (
+                                    <span className="px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/30 text-[10px] font-bold">
+                                      مرفوض
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="p-3">
+                                  <div className="flex items-center justify-center space-x-1.5 space-x-reverse">
+                                    {req.status === 'under_review' && (
+                                      <>
+                                        <button
+                                          onClick={() => handleAdminApprove(req)}
+                                          className="p-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs transition"
+                                          title="قبول الطلب"
+                                        >
+                                          <i className="fa-solid fa-check"></i>
+                                        </button>
+                                        <button
+                                          onClick={() => { setSelectedAdminReq(req); setShowRejectModal(true); }}
+                                          className="p-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs transition"
+                                          title="رفض الطلب"
+                                        >
+                                          <i className="fa-solid fa-xmark"></i>
+                                        </button>
+                                      </>
+                                    )}
+                                    <button
+                                      onClick={() => setSelectedAdminReq(req)}
+                                      className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs transition"
+                                      title="معاينة التفاصيل"
+                                    >
+                                      <i className="fa-solid fa-eye"></i>
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* RIGHT: ABHAR CARAVANS INVENTORY */}
+                  <div className="space-y-4">
+                    <div className="bg-abhar-navyLight p-5 rounded-2xl border border-slate-800 space-y-4 shadow-lg">
+                      <div className="flex justify-between items-center">
+                        <h3 className="font-extrabold text-base text-white flex items-center gap-2">
+                          <i className="fa-solid fa-caravan text-abhar-gold"></i>
+                          كتالوج كرفانات أبهر
+                        </h3>
+                        <button className="text-[10px] bg-abhar-gold text-abhar-navy font-bold px-2.5 py-1 rounded-lg flex items-center gap-1">
+                          <i className="fa-solid fa-plus"></i>
+                          إضافة كرفان
+                        </button>
+                      </div>
+
+                      <div className="space-y-3">
+                        {companyCaravans.map((c) => (
+                          <div key={c.id} className="bg-abhar-navy p-3 rounded-xl border border-slate-800 space-y-2">
+                            <img src={c.image} alt={c.title} className="w-full h-24 object-cover rounded-lg" />
+                            <div className="flex justify-between items-start pt-1">
+                              <div>
+                                <h4 className="font-bold text-white text-xs">{c.title}</h4>
+                                <p className="text-[10px] text-slate-400">{c.size}</p>
+                              </div>
+                              <span className="text-xs font-bold text-abhar-gold">{c.price} ر.ع</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+            )}
+
+          </main>
+
+          {/* PAYMENT MODAL */}
+          {showPaymentModal && (
+            <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="bg-abhar-navyLight border border-slate-800 w-full max-w-md rounded-2xl p-6 space-y-4">
+                <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+                  <h3 className="font-bold text-white text-sm flex items-center gap-2">
+                    <i className="fa-solid fa-credit-card text-abhar-gold"></i>
+                    بوابة السداد الإلكتروني - مؤسسة أبهر
+                  </h3>
+                  <button onClick={() => setShowPaymentModal(false)} className="text-slate-400 hover:text-white">
+                    <i className="fa-solid fa-xmark"></i>
+                  </button>
+                </div>
+
+                <div className="bg-abhar-navy p-3 rounded-xl border border-slate-800 text-xs space-y-1">
+                  <p className="text-slate-400">نوع الدفع:</p>
+                  <p className="font-bold text-white">
+                    {paymentType === 'deposit' ? `سداد مبلغ التأمين المبدئي (${selectedSpace?.deposit} ر.ع)` : 'سداد قيمة الإيجار النهائي من أبهر'}
+                  </p>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  <div>
+                    <label className="text-slate-400 block mb-1">اسم العميل / الشركة</label>
+                    <input type="text" defaultValue="مؤسسة الأفق للفعاليات" className="w-full bg-abhar-navy border border-slate-800 rounded-lg p-2.5 text-white" />
+                  </div>
+                  <div>
+                    <label className="text-slate-400 block mb-1">رقم البطاقة الائتمانية</label>
+                    <input type="text" defaultValue="5412 •••• •••• 9912" className="w-full bg-abhar-navy border border-slate-800 rounded-lg p-2.5 text-white font-mono" />
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleProcessPayment}
+                  className="w-full py-3 bg-gradient-to-r from-abhar-gold to-amber-500 text-abhar-navy font-black rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-xs"
+                >
+                  <i className="fa-solid fa-lock"></i>
+                  <span>تأكيد عملية السداد الآن</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ADMIN REJECT MODAL */}
+          {showRejectModal && (
+            <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="bg-abhar-navyLight border border-slate-800 w-full max-w-md rounded-2xl p-6 space-y-4">
+                <h3 className="font-bold text-white text-sm">سبب رفض طلب الحجز (إدارة أبهر)</h3>
+                <textarea
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  placeholder="اكتب سبب الرفض هنا ليتم إشعاره للعميل وإعادة مبلغ التأمين..."
+                  className="w-full h-24 bg-abhar-navy border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none"
+                ></textarea>
+                <div className="flex gap-2">
+                  <button onClick={handleAdminReject} className="flex-1 py-2.5 bg-rose-600 text-white font-bold rounded-xl text-xs">
+                    تأكيد الرفض
+                  </button>
+                  <button onClick={() => setShowRejectModal(false)} className="px-4 py-2.5 bg-slate-800 text-slate-300 font-bold rounded-xl text-xs">
+                    إلغاء
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
